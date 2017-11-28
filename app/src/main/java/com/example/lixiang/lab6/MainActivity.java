@@ -60,9 +60,9 @@ public class MainActivity extends AppCompatActivity {
             switch (msg.what){
                 case 123:
                     total_time.setText(time.format(PlayerGetDuration_Position(103)));
-                    music_time.setText(time.format(PlayerGetDuration_Position(104)));  //获得当前播放进度,并格式化为时间格式
-                    seekBar.setMax(PlayerGetDuration_Position(103));  //设置进度条最大数值
-                    seekBar.setProgress(PlayerGetDuration_Position(104));//设置进度条当前进度为音乐当前播放的位置
+                    music_time.setText(time.format(PlayerGetDuration_Position(104)));  //获得当前播放进度
+                    seekBar.setMax(PlayerGetDuration_Position(103));  //设置进度条最大值
+                    seekBar.setProgress(PlayerGetDuration_Position(104));//设置进度条进度
                     seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                         @Override
                         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -131,10 +131,10 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.stop:
                     PlayerStart_Stop(102);
                     state.setText("Stopped");
-                    flag = false;
                     play_button.setText("Play");
                     animator.start();
                     animator.pause();
+                    flag = false;
                     break;
                 case R.id.quit:
                     mHandler.removeCallbacks(mThread);
@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
         quit_button.setOnClickListener(new MyListener());
     }
 
-    private void PlayerStart_Stop(int code){ //控制音乐播放或停止 101为播放 102为停止
+    private void PlayerStart_Stop(int code){ //控制音乐-101播放/暂停-102停止
         Parcel data = Parcel.obtain();
         Parcel reply = Parcel.obtain();
         try{
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
-    private int PlayerGetDuration_Position(int code){ //获得音乐的时长以及当前播放时间 103 为时长 104为当前时间
+    private int PlayerGetDuration_Position(int code){ //获得音乐的-103时长-104当前时间
         Parcel data = Parcel.obtain();
         Parcel reply = Parcel.obtain();
         try{
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
         }
         return reply.readInt();
     }
-    private void PlayerSeek(int position){ //设置播放器从给定时间点的音乐位置播放
+    private void PlayerSeek(int position){ //设置播放器播放位置
         int code = 105;
         Parcel data = Parcel.obtain();
         data.writeInt(position);
@@ -196,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void setAnimator(){
         animator = ObjectAnimator.ofFloat(album_image, "rotation", 0, 360);
-        animator.setDuration(10000);
+        animator.setDuration(23333);
         animator.setInterpolator(new LinearInterpolator());
         animator.setRepeatCount(ObjectAnimator.INFINITE);
         animator.start();

@@ -14,7 +14,7 @@
         android:layout_weight="2"
         android:gravity="center"
         android:textSize="30sp"
-        android:text="name"/>
+        android:text="K.Will-녹는다"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -33,7 +33,7 @@
         android:id="@+id/state"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingStart="26dp"
+        android:paddingStart="28dp"
         tools:ignore="RtlSymmetry" />
 
     <LinearLayout
