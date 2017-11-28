@@ -7,6 +7,7 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.os.Environment;
 
 public class MusicService extends Service {
     private MediaPlayer mediaPlayer = new MediaPlayer();
@@ -28,7 +29,7 @@ public class MusicService extends Service {
                         mediaPlayer.stop();
                         try {
                             mediaPlayer.reset();
-                            mediaPlayer.setDataSource("/data/melt.mp3");
+                            mediaPlayer.setDataSource(Environment.getExternalStorageDirectory() +"/melt.mp3");
                             mediaPlayer.prepare();
                             mediaPlayer.setLooping(true);
                         } catch (Exception e){
@@ -70,7 +71,7 @@ public class MusicService extends Service {
 
     public MusicService(){
         try {
-            mediaPlayer.setDataSource("/data/melt.mp3");
+            mediaPlayer.setDataSource(Environment.getExternalStorageDirectory() + "/melt.mp3");
             mediaPlayer.prepare();
             mediaPlayer.setLooping(true);
         } catch (Exception e){

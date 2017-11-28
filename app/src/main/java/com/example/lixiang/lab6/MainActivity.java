@@ -1,13 +1,18 @@
 package com.example.lixiang.lab6;
 
+import android.Manifest;
 import android.animation.ObjectAnimator;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
@@ -18,6 +23,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
+import android.view.KeyEvent;
 
 import java.text.SimpleDateFormat;
 
@@ -29,13 +36,20 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar seekBar;
     private IBinder mBinder;
     private boolean flag = false;
+    private boolean hasPermission = false;
     private SimpleDateFormat time = new SimpleDateFormat("mm:ss");
     private ServiceConnection sc;
+
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
+    private static String[] PERMISSIONS_STORAGE = {
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        verifyStoragePermissions(MainActivity.this);
         sc = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
@@ -91,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                if (sc != null) {
+                if (sc != null && hasPermission) {
                     mHandler.obtainMessage(123).sendToTarget();
                 }
             }
@@ -203,4 +217,43 @@ public class MainActivity extends AppCompatActivity {
         animator.pause();
     }
 
+    public void verifyStoragePermissions(Activity activity) {
+        try {
+            int permission = ActivityCompat.checkSelfPermission(activity,
+                    "READ_EXTERNAL_STORAGE");
+            if (permission != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(activity, PERMISSIONS_STORAGE, REQUEST_EXTERNAL_STORAGE);
+            }
+            else {
+                hasPermission = true;
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            hasPermission = true;
+            PlayerStart_Stop(102);
+        } else {
+            Toast.makeText(this,"请允许申请权限之后重新启动！！",Toast.LENGTH_SHORT).show();
+            System.exit(0);
+        }
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            moveTaskToBack(false);
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+    @Override
+    public void onBackPressed() {
+        moveTaskToBack(true);
+        super.onBackPressed();
+    }
 }
