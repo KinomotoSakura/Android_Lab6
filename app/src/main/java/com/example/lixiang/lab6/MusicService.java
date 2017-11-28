@@ -16,20 +16,40 @@ public class MusicService extends Service {
         @Override
         protected boolean onTransact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
             switch(code){
-                case 101:
-                    playOrPause();
+                case 101:  //开始or暂停
+                    if (mediaPlayer.isPlaying()) {
+                        mediaPlayer.pause();
+                    } else {
+                        mediaPlayer.start();
+                    }
                     break;
-                case 102:
-                    stop();
+                case 102:  //停止
+                    if (mediaPlayer != null){
+                        mediaPlayer.stop();
+                        try {
+                            mediaPlayer.reset();
+                            mediaPlayer.setDataSource("/data/melt.mp3");
+                            mediaPlayer.prepare();
+                            mediaPlayer.setLooping(true);
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
                     break;
-                case 103:
-                    reply.writeInt(mediaPlayer.getDuration());
+                case 103:  //获取文件长度
+                    if (mediaPlayer != null) {
+                        reply.writeInt(mediaPlayer.getDuration());
+                    }
                     break;
-                case 104:
-                    reply.writeInt(mediaPlayer.getCurrentPosition());
+                case 104:  //获取已播放时间
+                    if (mediaPlayer != null) {
+                        reply.writeInt(mediaPlayer.getCurrentPosition());
+                    }
                     break;
-                case 105:
-                    mediaPlayer.seekTo(data.readInt());
+                case 105:  //设置进度
+                    if (mediaPlayer != null) {
+                        mediaPlayer.seekTo(data.readInt());
+                    }
                     break;
             }
             return super.onTransact(code, data, reply, flags);
@@ -57,22 +77,5 @@ public class MusicService extends Service {
             e.printStackTrace();
         }
     }
-    private void playOrPause(){
-        if (mediaPlayer.isPlaying()) {
-            mediaPlayer.pause();
-        } else {
-            mediaPlayer.start();
-        }
-    }
-    private void stop(){
-        if(mediaPlayer != null){
-            mediaPlayer.stop();
-            try {
-                mediaPlayer.prepare();
-                mediaPlayer.seekTo(0);
-            } catch (Exception e){
-                e.printStackTrace();
-            }
-        }
-    }
+
 }
