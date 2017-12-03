@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initLrc() {
         ILrcBuilder builder = new LrcBuilder();
-        InputStream in = builder.setDataSource(Environment.getExternalStorageDirectory() + "/");
+        InputStream in = builder.setDataSource(Environment.getExternalStorageDirectory() + "/Music");
         String lrc = builder.readStreamToString(in, Charset.forName("UTF-8"));
         List<LrcRow> rows = builder.getLrcRows(lrc);
         mLrcView.setLrc(rows);
@@ -195,10 +195,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.stop:
                     PlayerStart_Stop(102);
-                    if(mTimer != null){
-                        mTimer.cancel();
-                        mTimer = null;
-                    }
+                    mLrcView.seekLrcToTime(0);
                     state.setText("Stopped");
                     play_button.setText("Play");
                     animator.start();

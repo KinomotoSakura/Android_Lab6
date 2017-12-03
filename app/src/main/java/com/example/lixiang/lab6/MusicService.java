@@ -29,7 +29,7 @@ public class MusicService extends Service {
                         mediaPlayer.stop();
                         try {
                             mediaPlayer.reset();
-                            mediaPlayer.setDataSource(Environment.getExternalStorageDirectory() +"/melt.mp3");
+                            mediaPlayer.setDataSource(Environment.getExternalStorageDirectory() +"/Music/melt.mp3");
                             mediaPlayer.prepare();
                             mediaPlayer.setLooping(true);
                         } catch (Exception e){
@@ -71,7 +71,7 @@ public class MusicService extends Service {
 
     public MusicService(){
         try {
-            mediaPlayer.setDataSource(Environment.getExternalStorageDirectory() + "/melt.mp3");
+            mediaPlayer.setDataSource(Environment.getExternalStorageDirectory() + "/Music/melt.mp3");
             mediaPlayer.prepare();
             mediaPlayer.setLooping(true);
         } catch (Exception e){
