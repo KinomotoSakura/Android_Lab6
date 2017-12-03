@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.os.Environment;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.RemoteException;
@@ -26,16 +27,33 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.view.KeyEvent;
 
+import com.example.lixiang.lab6.myView.ILrcView;
+import com.example.lixiang.lab6.myView.ILrcBuilder;
+import com.example.lixiang.lab6.myView.LrcBuilder;
+import com.example.lixiang.lab6.myView.LrcRow;
+
+import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
+    private ILrcView mLrcView;
+    //更新歌词的频率，每秒更新一次
+    private int mPalyTimerDuration = 100;
+    //更新歌词的定时器
+    private Timer mTimer;
+    //更新歌词的定时任务
+    private TimerTask mTask;
     private ObjectAnimator animator;
     private Button play_button, stop_button, quit_button;
     private TextView state, music_time, total_time, name;
     private ImageView album_image;
     private SeekBar seekBar;
     private IBinder mBinder;
-    private boolean flag = false;
+    private boolean isPlaying = false;
     private boolean hasPermission = false;
     private SimpleDateFormat time = new SimpleDateFormat("mm:ss");
     private ServiceConnection sc;
@@ -60,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                 sc = null;
             }
         };
-        findView();
+        initView();
         bindButton();
         connection();
         setAnimator();
@@ -112,7 +130,8 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-    private void findView(){
+    private void initView(){
+        mLrcView = (ILrcView)findViewById(R.id.lyrics);
         play_button = (Button)findViewById(R.id.play_pause);
         stop_button = (Button)findViewById(R.id.stop);
         quit_button = (Button)findViewById(R.id.quit);
@@ -122,7 +141,34 @@ public class MainActivity extends AppCompatActivity {
         total_time = (TextView)findViewById(R.id.time2);
         seekBar = (SeekBar)findViewById(R.id.seekBar);
         album_image = (ImageView)findViewById(R.id.image);
+
+        mLrcView.setVisibility(View.INVISIBLE);
+        album_image.setVisibility(View.VISIBLE);
+        initLrc();
     }
+
+    private void initLrc() {
+        ILrcBuilder builder = new LrcBuilder();
+        InputStream in = builder.setDataSource(Environment.getExternalStorageDirectory() + "/");
+        String lrc = builder.readStreamToString(in, Charset.forName("UTF-8"));
+        List<LrcRow> rows = builder.getLrcRows(lrc);
+        mLrcView.setLrc(rows);
+    }
+
+    private class LrcTask extends TimerTask{
+        @Override
+        public void run() {
+            //获取歌曲播放的位置
+            final long timePassed = PlayerGetDuration_Position(104);
+            MainActivity.this.runOnUiThread(new Runnable() {
+                public void run() {
+                    //滚动歌词
+                    mLrcView.seekLrcToTime(timePassed);
+                }
+            });
+
+        }
+    };
 
     private class MyListener implements View.OnClickListener{
         @Override
@@ -130,25 +176,34 @@ public class MainActivity extends AppCompatActivity {
             switch (v.getId()){
                 case R.id.play_pause:
                     PlayerStart_Stop(101);
-                    if(flag) {
+                    if(mTimer == null){
+                        mTimer = new Timer();
+                        mTask = new LrcTask();
+                        mTimer.scheduleAtFixedRate(mTask, 0, mPalyTimerDuration);
+                    }
+                    if(isPlaying) {
                         animator.pause();
                         state.setText("Paused");
                         play_button.setText("Play");
-                        flag = false;
+                        isPlaying = false;
                     } else{
                         animator.resume();
                         state.setText("Playing");
                         play_button.setText("Paused");
-                        flag = true;
+                        isPlaying = true;
                     }
                     break;
                 case R.id.stop:
                     PlayerStart_Stop(102);
+                    if(mTimer != null){
+                        mTimer.cancel();
+                        mTimer = null;
+                    }
                     state.setText("Stopped");
                     play_button.setText("Play");
                     animator.start();
                     animator.pause();
-                    flag = false;
+                    isPlaying = false;
                     break;
                 case R.id.quit:
                     mHandler.removeCallbacks(mThread);
@@ -161,6 +216,14 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     break;
+                case R.id.lyrics:
+                        mLrcView.setVisibility(View.INVISIBLE);
+                        album_image.setVisibility(View.VISIBLE);
+                    break;
+                case R.id.image:
+                        mLrcView.setVisibility(View.VISIBLE);
+                        album_image.setVisibility(View.INVISIBLE);
+                    break;
             }
         }
     }
@@ -169,6 +232,8 @@ public class MainActivity extends AppCompatActivity {
         play_button.setOnClickListener(new MyListener());
         stop_button.setOnClickListener(new MyListener());
         quit_button.setOnClickListener(new MyListener());
+        album_image.setOnClickListener(new MyListener());
+        mLrcView.setOnClickListener(new MyListener());
     }
 
     private void PlayerStart_Stop(int code){ //控制音乐-101播放/暂停-102停止
@@ -236,10 +301,9 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             hasPermission = true;
-            PlayerStart_Stop(102);
+            //PlayerStart_Stop(102);
         } else {
             Toast.makeText(this,"请允许申请权限之后重新启动！！",Toast.LENGTH_SHORT).show();
-            System.exit(0);
         }
     }
 
