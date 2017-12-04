@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private SeekBar seekBar;
     private IBinder mBinder;
     private boolean isPlaying = false;
-    private boolean hasPermission = false;
+    public boolean hasPermission = false;
     private SimpleDateFormat time = new SimpleDateFormat("mm:ss");
     private ServiceConnection sc;
 
@@ -144,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
 
         mLrcView.setVisibility(View.INVISIBLE);
         album_image.setVisibility(View.VISIBLE);
-        initLrc();
+        if (hasPermission) initLrc();
     }
 
     private void initLrc() {
@@ -294,11 +294,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             hasPermission = true;
-            //PlayerStart_Stop(102);
+            PlayerStart_Stop(102);
+            initLrc();
         } else {
             Toast.makeText(this,"请允许申请权限之后重新启动！！",Toast.LENGTH_SHORT).show();
         }
